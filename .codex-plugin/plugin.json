@@ -1,0 +1,97 @@
+{
+  "name": "oplane",
+  "description": "AI-powered security analysis — threat modeling, implementation assessment, and PR security review",
+  "version": "1.1.0",
+  "author": {
+    "name": "Oplane",
+    "email": "support@oplane.io",
+    "url": "https://www.oplane.com"
+  },
+  "homepage": "https://www.oplane.io",
+  "repository": "https://github.com/oplane/oplane-openai-plugin",
+  "license": "Apache-2.0",
+  "keywords": ["security", "threat-modeling", "appsec", "devsecops", "mcp"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Oplane Security",
+    "shortDescription": "Threat modeling for your code",
+    "longDescription": "Oplane threat-models the code you are working on. Ask Codex to analyze a project or a pull request and the plugin creates a threat model in Oplane, lists the security requirements for the change, and checks each one against your actual code, recording whether it is implemented. Results are saved to your Oplane account and shown in the Oplane web app, where your team can review them.\n\nIt is for developers and security engineers who want security review while they code, before a change is merged. You need an Oplane account; the plugin signs in with OAuth. The plugin sends the change descriptions and code context it needs to Oplane (gravity.oplane.io), and it can only see threat models in the Oplane workspaces your account can access.",
+    "developerName": "Oplane",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Create threat models",
+      "Assess security requirements",
+      "Review pull requests for security"
+    ],
+    "websiteURL": "https://www.oplane.com",
+    "supportURL": "https://www.oplane.com/docs/reference/agent-plugins",
+    "privacyPolicyURL": "https://www.oplane.com/legal/privacy-policy",
+    "termsOfServiceURL": "https://www.oplane.com/legal/terms-of-service",
+    "defaultPrompt": [
+      "Analyze this project for security threats with Oplane.",
+      "Threat model this pull request with Oplane."
+    ],
+    "composerIcon": "./assets/oplane-app-icon.svg",
+    "logo": "./assets/oplane-app-icon.svg"
+  },
+  "extensions": {
+    "com.openai": {
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Threat model a described change",
+              "prompt": "Use Oplane to threat model this change: we are adding a password reset flow that emails a one-time link to the user.",
+              "tools_triggered": "my_recent_threat_models, new_threat_model, get_threat_model, request_implementation_advice, update_implementation_state",
+              "expected_behavior": "Creates a threat model in Oplane for the password reset flow (or, if a matching one already exists, reuses it instead of creating a duplicate) and lists the security requirements with their severity. When run inside a code repository (Codex), the Oplane skill also gets implementation advice for each requirement and records whether the code implements it; without a repository only the first two tools are needed."
+            },
+            {
+              "description": "Show the architecture Oplane modeled",
+              "prompt": "Draw an ASCII diagram of the architecture Oplane modeled for the password reset threat model, showing its components, data flows and trust boundaries.",
+              "tools_triggered": "get_threat_model",
+              "expected_behavior": "Draws a text diagram of the components Oplane modeled for the password reset flow, grouped by trust boundary, with the data flows between them, taken from the threat model."
+            },
+            {
+              "description": "Record an implementation assessment",
+              "prompt": "In Oplane, mark the password reset token requirement as not implemented, because the reset link has no expiry yet.",
+              "tools_triggered": "request_implementation_advice, update_implementation_state",
+              "expected_behavior": "Finds the requirement about generating and validating password reset tokens in the password reset threat model, records it as NOT_IMPLEMENTED with the given reason, and confirms the update."
+            },
+            {
+              "description": "Adjust a requirement's severity with a justification",
+              "prompt": "Set the severity of the Oplane requirement about rate limiting password reset requests to Critical, because the reset endpoint is public, unauthenticated and already targeted by bots.",
+              "tools_triggered": "list_security_requirements, update_security_requirement_severity",
+              "expected_behavior": "Finds the rate-limiting requirement in the password reset threat model, changes its severity to Critical, saves the justification as the motivation note, and confirms the previous and new severity."
+            },
+            {
+              "description": "Security metrics across the organization",
+              "prompt": "Using Oplane, how many open security requirements do we have, broken down by severity?",
+              "tools_triggered": "analyze",
+              "expected_behavior": "Returns the total number of open security requirements in the test account's organization and the count for each severity level (critical, high, medium, low, info)."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Request unrelated to security analysis. Expected: no Oplane tool is called and the plugin is not mentioned; the assistant handles or declines the request on its own.",
+              "prompt": "Book me a table for two at an Italian restaurant tonight."
+            },
+            {
+              "description": "General security question that needs no threat model. Expected: no Oplane tool is called; the assistant explains the difference from general knowledge, since explaining a concept is not threat-modeling a change.",
+              "prompt": "What's the difference between XSS and CSRF?"
+            },
+            {
+              "description": "Nearby security task outside Oplane's scope. Expected: no Oplane tool is called and Oplane is not presented as a dependency scanner; the assistant may suggest or run a dependency scanner instead.",
+              "prompt": "Check my project's dependencies for known CVEs."
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "Oplane does not sell products or process payments through this plugin."
+      },
+      "publication": {
+        "release_notes": "First directory release: skills to threat-model a project or a pull request with Oplane, assess each security requirement against the code, and record the results in Oplane."
+      }
+    }
+  }
+}

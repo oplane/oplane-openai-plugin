@@ -17,7 +17,7 @@ Results are saved to Oplane and visible in the [Gravity web interface](https://g
 ## 1. Add the Oplane marketplace
 
 ```bash
-codex plugin marketplace add oplane/oplane-plugin
+codex plugin marketplace add oplane/oplane-openai-plugin
 ```
 
 ## 2. Install the plugin
